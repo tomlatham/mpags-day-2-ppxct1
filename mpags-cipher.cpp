@@ -3,14 +3,15 @@
 #include <string>
 #include <vector>
 #include <fstream>
-
-#include "TransformChar.hpp"
-
 // For std::isalpha and std::isupper
 #include <cctype>
 
-//std::string transformChar( const char inChar );
+#include "TransformChar.hpp"
+//#include "runCaesarCipher.hpp"
 
+
+
+//std::string transformChar( const char inChar );
 
 
 bool processCommandLine(const std::vector<std::string>& args, bool& helpRequested,bool& versionRequested,std::string& inputFileName,std::string& outputFileName )
@@ -64,6 +65,50 @@ bool processCommandLine(const std::vector<std::string>& args, bool& helpRequeste
 	
 	
 
+}
+
+
+
+std::string runCaesarCipher(  std::string& inputText, const size_t key, const bool encrypt )
+{
+  std::string OutputString;
+  std::string Alphabet {"ABCDEFGHIJKLMNOPQRSTUVQXYZ"};
+
+
+  int AsciiStart = 65;
+  int position;
+  int shifted;
+  char out;
+
+  for(char& c : inputText)
+  {
+    position = int(c) - 65;
+
+    if (encrypt == 1)
+    {
+      shifted = position + (int)key;
+    }
+    else
+    {
+      shifted = position - (int)key;
+    }
+
+    
+    if (shifted < 0)
+    {
+      shifted = abs(shifted) + 13;
+    }
+    if (shifted > 25)
+    {
+      shifted = abs(shifted - 26);
+    }
+
+    OutputString = OutputString + Alphabet[shifted];
+
+
+
+  }
+  return OutputString;
 }
 
 
@@ -154,6 +199,9 @@ int main(int argc, char* argv[])
     outputText += transformChar(inputChar);
   }
 
+//const std::string temp1 {"ABC"};
+ // std::string temp =  runCaesarCipher(temp1, 1, true);
+
   // Output the transliterated text
   // Warn that output file option not yet implemented
   // if (!outputFile.empty()) {
@@ -181,6 +229,7 @@ int main(int argc, char* argv[])
      out_file.close();
   }
 
+  outputText = runCaesarCipher(outputText,1,1);
   std::cout << outputText  << std::endl;
 
   // No requirement to return from main, but we do so for clarity
