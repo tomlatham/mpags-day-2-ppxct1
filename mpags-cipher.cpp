@@ -7,12 +7,7 @@
 #include <cctype>
 
 #include "TransformChar.hpp"
-//#include "runCaesarCipher.hpp"
-
-
-
-//std::string transformChar( const char inChar );
-
+#include "runCaesarCipher.hpp"
 
 bool processCommandLine(const std::vector<std::string>& args, bool& helpRequested,bool& versionRequested,std::string& inputFileName,std::string& outputFileName )
 {
@@ -33,7 +28,7 @@ bool processCommandLine(const std::vector<std::string>& args, bool& helpRequeste
       if (i == nargs-1) {
 	    std::cerr << "[error] -i requires a filename argument" << std::endl;
 	// exit main with non-zero return to indicate failure
-	    return 1;
+	    return false;
       }
       else {
 	// Got filename, so assign value and advance past it
@@ -47,7 +42,7 @@ bool processCommandLine(const std::vector<std::string>& args, bool& helpRequeste
       if (i == nargs-1) {
 	      std::cerr << "[error] -o requires a filename argument" << std::endl;
 	      // exit main with non-zero return to indicate failure
-	      return 1;
+	      return false;
       }
       else {
       	// Got filename, so assign value and advance past it
@@ -59,9 +54,11 @@ bool processCommandLine(const std::vector<std::string>& args, bool& helpRequeste
       // Have an unknown flag to output error message and return non-zero
       // exit status to indicate failure
       std::cerr << "[error] unknown argument '" << args[i] << "'\n";
-      return 1;
+      return false;
     }
   }
+
+   return true;
 	
 	
 
@@ -69,6 +66,7 @@ bool processCommandLine(const std::vector<std::string>& args, bool& helpRequeste
 
 
 
+/*
 std::string runCaesarCipher(  std::string& inputText, const size_t key, const bool encrypt )
 {
   std::string OutputString;
@@ -110,6 +108,7 @@ std::string runCaesarCipher(  std::string& inputText, const size_t key, const bo
   }
   return OutputString;
 }
+*/
 
 
 // Main function of the mpags-cipher program
@@ -128,12 +127,15 @@ int main(int argc, char* argv[])
   std::string inputFile {""};
   std::string outputFile {""};
   std::string outputText {""};
-  bool testbool {false};
 
   // Process command line arguments - ignore zeroth element, as we know this to
   // be the program name and don't need to worry about it
 
- testbool = processCommandLine(cmdLineArgs, helpRequested, versionRequested,inputFile, outputFile);
+ bool processedOK { processCommandLine(cmdLineArgs, helpRequested, versionRequested,inputFile, outputFile) };
+ if ( ! processedOK ) {
+   std::cerr << "[error] problem processing command line arguments" << std::endl;
+	 return 1;
+ }
 
   // Handle help, if requested
   if (helpRequested) {
@@ -166,49 +168,34 @@ int main(int argc, char* argv[])
   std::string inputText {""};
 
   // Read in user input from stdin/file
-  // Warn that input file option not yet implemented
-  if (inputFile.empty()) {
-    std::cout << "[warning] input from file ('"
-              << inputFile
-              << "') empty, using stdin\n";
-  }
-  else
-  {
+  if (!inputFile.empty()) {
     std::ifstream in_file {inputFile};
     bool ok_to_read = in_file.good();
 
-    while (ok_to_read == false)
+    if ( ! ok_to_read )
     {
-      std::cout << "File read error\n";
-      std::ifstream in_file {inputFile};
-      ok_to_read = in_file.good();
-      in_file.close();
-      //return 0;
+      std::cerr << "[error] reading from file " << inputFile << std::endl;
+      return 1;
     }
-    in_file >> inputChar;
-    in_file.close();
 
+    while (in_file >> inputChar)
+    {
+      outputText += transformChar(inputChar);
+    }
 
+  } else {
+
+    // Loop over each character from user input
+    // (until Return then CTRL-D (EOF) pressed)
+    while(std::cin >> inputChar)
+    {
+      outputText += transformChar(inputChar);
+    }
   }
 
-  // Loop over each character from user input
-  // (until Return then CTRL-D (EOF) pressed)
-  while(std::cin >> inputChar)
-  {
-    //std::cout << "a";
-    outputText += transformChar(inputChar);
-  }
-
-//const std::string temp1 {"ABC"};
- // std::string temp =  runCaesarCipher(temp1, 1, true);
+  outputText = runCaesarCipher(outputText,1,true);
 
   // Output the transliterated text
-  // Warn that output file option not yet implemented
-  // if (!outputFile.empty()) {
-  //   std::cout << "[warning] output to file ('"
-  //             << outputFile
-  //             << "') not implemented yet, using stdout\n";
-  // }
   if (!outputFile.empty()) {
 
       
@@ -216,21 +203,17 @@ int main(int argc, char* argv[])
           std::ofstream out_file{ outputFile, std::ios::app };
           bool ok_to_read = out_file.good();
 
-    while (ok_to_read == false)
+    if ( ! ok_to_read )
     {
-      std::cout << "File write error\n";
-      std::ofstream out_file{ outputFile, std::ios::app };
-      ok_to_read = out_file.good();
-      out_file.close();
+      std::cerr << "[error] writing to file " << outputFile << std::endl;;
+      return 1;
     }
-     //out_file.open();
-     //std::ofstream out_file{ "OutputFile.txt", std::ios::app };
-     out_file << outputText << std::endl;;
-     out_file.close();
-  }
 
-  outputText = runCaesarCipher(outputText,1,1);
+    out_file << outputText << std::endl;;
+  } else {
+
   std::cout << outputText  << std::endl;
+  }
 
   // No requirement to return from main, but we do so for clarity
   // and for consistency with other functions

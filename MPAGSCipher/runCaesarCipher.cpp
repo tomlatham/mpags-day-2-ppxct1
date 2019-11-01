@@ -1,47 +1,31 @@
 #include <string>
-#include <cctype>
 
 #include "runCaesarCipher.hpp"
 
 std::string runCaesarCipher( const std::string& inputText, const size_t key, const bool encrypt )
 {
   std::string OutputString;
-  std::string Alphabet {"ABCDEFGHIJKLMNOPQRSTUVQXYZ"};
+  std::string alphabet {"ABCDEFGHIJKLMNOPQRSTUVQXYZ"};
+  std::string::size_type alphabetSize {alphabet.size()};
 
+  const size_t truncatedKey { key % alphabetSize };
 
-  int AsciiStart = 65;
-  int position;
-  int shifted;
-  char out;
-
-  for(char& c : inputText)
+  for(const char& c : inputText)
   {
-    //numerical position in the alphabet, based off (decimal) AScii value
-    position = int(c) - 65;
+    //numerical position in the alphabet
+    const std::string::size_type position { alphabet.find(c) };
 
+    std::string::size_type shifted { 0 };
     if (encrypt == true)
     {
-      shifted = position + (int)key;
+      shifted = position + key;
     }
     else
     {
-      shifted = position - (int)key;
+      shifted = position + alphabetSize - key;
     }
 
-    
-    if (shifted < 0)
-    {
-      shifted = abs(shifted) + 26;
-    }
-    if (shifted > 25)
-    {
-      shifted = abs(shifted - 26);
-    }
-
-    OutputString = OutputString + Alphabet[shifted];
-
-
-
+    OutputString += alphabet[shifted];
   }
   return OutputString;
 }

@@ -2,8 +2,7 @@
 #define MPAGSCIPHER_RUNCAESARCIPHER_HPP
 
 #include <string>
-#include <cctype>
 
-std::string runCaesarCipher(  std::string& inputText, const size_t key, const bool encrypt )
+std::string runCaesarCipher( const std::string& inputText, const size_t key, const bool encrypt );
 
 #endif // MPAGSCIPHER_RUNCAESARCIPHER_HPP
