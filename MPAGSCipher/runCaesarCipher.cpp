@@ -18,11 +18,11 @@ std::string runCaesarCipher( const std::string& inputText, const size_t key, con
     std::string::size_type shifted { 0 };
     if (encrypt == true)
     {
-      shifted = position + key;
+      shifted = (position + key) % alphabetSize;
     }
     else
     {
-      shifted = position + alphabetSize - key;
+      shifted = (position + alphabetSize - key) % alphabetSize;
     }
 
     OutputString += alphabet[shifted];
